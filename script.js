@@ -7,40 +7,32 @@ async function loadContent() {
     const { data: topic, error: tError } = await supabaseClient
         .from('topics')
         .select('*')
+        .eq('status', 'active')
         .limit(1)
         .single();
 
-    if (tError) {
-        console.error('Помилка завантаження теми:', tError);
-        return;
-    }
-
     if (topic) {
         document.getElementById('topic-title').innerText = topic.title;
-        const descElement = document.getElementById('topic-description');
-        if (descElement) descElement.innerText = topic.description;
+        document.getElementById('topic-description').innerText = topic.description;
         
         const { data: debateArgs, error: aError } = await supabaseClient
             .from('arguments')
             .select('*')
             .eq('topic_id', topic.id);
 
-        if (aError) {
-            console.error('Помилка завантаження аргументів:', aError);
-            return;
-        }
-
         const container = document.getElementById('arguments-grid');
-        if (container) {
-            container.innerHTML = '';
+        if (container && debateArgs) {
+            container.innerHTML = ''; 
 
             debateArgs.forEach(arg => {
+                const cardType = arg.arg_type === 'con' ? 'contra' : arg.arg_type;
+
                 const card = `
-                    <div class="argument-card ${arg.type}">
-                        <span class="badge badge-${arg.type}">${arg.badge_text}</span>
-                        <h3>${arg.title}</h3>
-                        <p>${arg.text}</p>
-                        <small style="color: var(--text-muted)">Репутація автора: +${arg.reputation}</small>
+                    <div class="argument-card ${cardType}">
+                        <span class="badge badge-${cardType}">${arg.badge_text || 'Аргумент'}</span>
+                        <h3>${arg.title || 'Без назви'}</h3>
+                        <p>${arg.content}</p> 
+                        <small style="color: var(--text-muted)">Автор: ${arg.author_name} | Репутація: +${arg.reputation}</small>
                     </div>
                 `;
                 container.innerHTML += card;
