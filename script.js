@@ -48,7 +48,7 @@ async function loadArguments(topicId) {
         .from('arguments')
         .select('*')
         .eq('topic_id', topicId)
-        .order('reputation', { ascending: false }); // Сортуємо: популярні зверху!
+        .order('reputation', { ascending: false });
 
     const grid = document.getElementById(`grid-${topicId}`);
     
@@ -57,7 +57,6 @@ async function loadArguments(topicId) {
         args.forEach(arg => {
             const typeClass = arg.arg_type === 'con' ? 'contra' : arg.arg_type;
             
-            // ДОДАЛИ: Кнопка лайка з викликом voteArgument
             const card = `
                 <div class="argument-card ${typeClass}">
                     <div style="display:flex; justify-content:space-between;">
@@ -76,16 +75,13 @@ async function loadArguments(topicId) {
     }
 }
 
-// НОВА ФУНКЦІЯ: Викликає твою SQL-процедуру
 async function voteArgument(argId, topicId) {
-    // Викликаємо функцію бази даних 'vote_for_argument'
     const { data, error } = await supabaseClient
         .rpc('vote_for_argument', { arg_id: argId });
 
     if (error) {
         alert("Помилка голосування: " + error.message);
     } else {
-        // Оновлюємо лише цю сітку, щоб побачити нову цифру
         loadArguments(topicId);
     }
 }
