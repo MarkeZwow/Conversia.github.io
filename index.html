@@ -3,54 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мій новий сайт</title>
+    <title>Controversia | Конструктор ідей</title>
     <style>
-        /* Мінімальні стилі, щоб сайт не виглядав як з 90-х */
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --pro: #22c55e;
+            --contra: #ef4444;
+        }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             line-height: 1.6;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-            background-color: #f4f4f9;
-            color: #333;
+            margin: 0;
+            padding: 0;
         }
-        .card {
-            background: white;
+
+        header {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: linear-gradient(to bottom, #1e293b, #0f172a);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
             padding: 20px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: -1px;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        /* Стиль секцій (База знань) */
+        .topic-header {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .debate-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .debate-grid { grid-template-columns: 1fr; }
+        }
+
+        .argument-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-top: 3px solid transparent;
         }
-        h1 { color: #2c3e50; }
-        button {
-            background-color: #3e8ed0;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+
+        .pro { border-color: var(--pro); }
+        .contra { border-color: var(--contra); }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .badge-pro { background: rgba(34, 197, 94, 0.1); color: var(--pro); }
+        .badge-contra { background: rgba(239, 68, 68, 0.1); color: var(--contra); }
+
+        .btn-action {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 2rem;
+            background: transparent;
+            border: 1px dashed var(--accent);
+            color: var(--accent);
             cursor: pointer;
+            border-radius: 8px;
+            transition: 0.3s;
         }
-        button:hover { background-color: #3478b1; }
+
+        .btn-action:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Привіт! Це мій сайт на GitHub Pages</h1>
-        <p>Я створив цей файл прямо в репозиторії.</p>
-        
-        <p id="status">Зараз тут немає підключення до бази даних, але скоро буде.</p>
-        
-        <button onclick="greet()">Натисни мене</button>
+<header>
+    <div class="logo">CONTROVERSIA</div>
+    <div class="tagline">Відкриті питання науки та суспільства</div>
+</header>
+
+<div class="container">
+    <div class="topic-header">
+        <span style="color: var(--accent)">Тема тижня:</span>
+        <h2>Чи може ШІ мати свідомість?</h2>
+        <p>Аналіз природи невизначеності: відсутність єдиного визначення "свідомості" у нейронауці та філософії.</p>
     </div>
 
-    <script>
-        // Тут буде ваша логіка (JavaScript)
-        function greet() {
-            alert('Працює! Тепер можна редагувати цей код з будь-якого пристрою.');
-            document.getElementById('status').innerText = 'Кнопку натиснуто! Тепер спробуй додати Supabase пізніше.';
+    <div class="debate-grid">
+        <div class="argument-card pro">
+            <span class="badge badge-pro">Теорія функционалізму</span>
+            <h3>Функціональна схожість</h3>
+            <p>Якщо система обробляє інформацію так само як людський мозок, вона повинна мати суб'єктивний досвід.</p>
+            <small style="color: var(--text-muted)">Репутація автора: +142</small>
+        </div>
+
+        <div class="argument-card contra">
+            <span class="badge badge-contra">Біологічний натуралізм</span>
+            <h3>Відсутність біологічного субстрату</h3>
+            <p>Свідомість — це біологічний процес, подібний до травлення, який неможливо зімітувати кодом.</p>
+            <small style="color: var(--text-muted)">Репутація автора: +89</small>
+        </div>
+    </div>
+
+    <button class="btn-action" onclick="addIdea()">+ Запропонувати власну гіпотезу або критику</button>
+</div>
+
+<footer>
+    <p>&copy; 2026 Controversia. AI-контроль логіки активовано.</p>
+</footer>
+
+<script>
+    function addIdea() {
+        const idea = prompt("Введіть вашу гіпотезу або аргумент:");
+        if (idea) {
+            alert("Дякуємо! Ваша ідея відправлена на AI-перевірку логічності. Після підключення Supabase вона з'явиться в базі.");
         }
-    </script>
+    }
+</script>
 
 </body>
 </html>
