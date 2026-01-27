@@ -19,28 +19,26 @@ async function loadContent() {
         return;
     }
 
-    container.innerHTML = '';
+    container.innerHTML = ''; 
 
     for (const topic of topics) {
         const topicBlock = document.createElement('div');
         topicBlock.className = 'topic-block';
-        topicBlock.style.marginBottom = '4rem';
+        topicBlock.style.marginBottom = '4rem'; 
 
         topicBlock.innerHTML = `
             <div class="topic-header">
-                <span style="color: var(--accent)">Тема #${topic.id}:</span>
+                <span style="color: var(--accent)">Тема #${topic.id} | ${topic.category || 'Загальне'}</span>
                 <h2>${topic.title}</h2>
                 <p>${topic.description}</p>
             </div>
-            <div class="debate-grid" id="grid-${topic.id}">
-                </div>
+            <div class="debate-grid" id="grid-${topic.id}"></div>
             <button class="btn-action" onclick="addIdea(${topic.id})">
                 + Додати аргумент до цієї теми
             </button>
         `;
         
         container.appendChild(topicBlock);
-
         await loadArguments(topic.id);
     }
 }
@@ -49,7 +47,8 @@ async function loadArguments(topicId) {
     const { data: args, error } = await supabaseClient
         .from('arguments')
         .select('*')
-        .eq('topic_id', topicId);
+        .eq('topic_id', topicId)
+        .order('reputation', { ascending: false }); // Сортуємо: популярні зверху!
 
     const grid = document.getElementById(`grid-${topicId}`);
     
@@ -58,18 +57,36 @@ async function loadArguments(topicId) {
         args.forEach(arg => {
             const typeClass = arg.arg_type === 'con' ? 'contra' : arg.arg_type;
             
+            // ДОДАЛИ: Кнопка лайка з викликом voteArgument
             const card = `
                 <div class="argument-card ${typeClass}">
-                    <span class="badge badge-${typeClass}">${arg.badge_text || 'Думка'}</span>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Думка'}</span>
+                        <span style="cursor:pointer" onclick="voteArgument(${arg.id}, ${topicId})">
+                            👍 <b>${arg.reputation}</b>
+                        </span>
+                    </div>
                     <h3>${arg.title || 'Без заголовку'}</h3>
                     <p>${arg.content}</p>
-                    <small style="color: var(--text-muted)">
-                        Автор: ${arg.author_name} | Репутація: +${arg.reputation || 0}
-                    </small>
+                    <small style="color: var(--text-muted)">Автор: ${arg.author_name}</small>
                 </div>
             `;
             grid.innerHTML += card;
         });
+    }
+}
+
+// НОВА ФУНКЦІЯ: Викликає твою SQL-процедуру
+async function voteArgument(argId, topicId) {
+    // Викликаємо функцію бази даних 'vote_for_argument'
+    const { data, error } = await supabaseClient
+        .rpc('vote_for_argument', { arg_id: argId });
+
+    if (error) {
+        alert("Помилка голосування: " + error.message);
+    } else {
+        // Оновлюємо лише цю сітку, щоб побачити нову цифру
+        loadArguments(topicId);
     }
 }
 
@@ -78,7 +95,7 @@ async function addIdea(topicId) {
     if (!text) return;
 
     const typeInput = prompt("Тип аргументу (введіть 'pro' або 'contra'):");
-    const safeType = (typeInput === 'contra') ? 'contra' : 'pro';
+    const safeType = (typeInput === 'contra' || typeInput === 'con') ? 'contra' : 'pro';
 
     const { data, error } = await supabaseClient
         .from('arguments')
@@ -87,7 +104,7 @@ async function addIdea(topicId) {
                 topic_id: topicId, 
                 content: text, 
                 arg_type: safeType,
-                title: 'Нова думка',
+                title: 'Нова думка', 
                 badge_text: 'Користувач',
                 author_name: 'Гість'
             }
@@ -96,8 +113,7 @@ async function addIdea(topicId) {
     if (error) {
         alert("Помилка при збереженні: " + error.message);
     } else {
-        alert("Аргумент додано! Оновіть сторінку.");
-        loadArguments(topicId);
+        loadArguments(topicId); 
     }
 }
 
