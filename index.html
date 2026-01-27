@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controversia | Конструктор ідей</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #0f172a;
@@ -22,6 +23,24 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
+        }
+
+        nav {
+            padding: 1rem 2rem;
+            background: rgba(30, 41, 59, 0.8);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        nav a {
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
         }
 
         header {
@@ -49,7 +68,6 @@
             font-size: 1.2rem;
         }
 
-        /* Стиль секцій (База знань) */
         .topic-header {
             background: var(--card-bg);
             padding: 2rem;
@@ -73,7 +91,10 @@
             padding: 1.5rem;
             border-radius: 8px;
             border-top: 3px solid transparent;
+            animation: fadeIn 0.5s ease-in;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .pro { border-color: var(--pro); }
         .contra { border-color: var(--contra); }
@@ -104,9 +125,7 @@
             transition: 0.3s;
         }
 
-        .btn-action:hover {
-            background: rgba(56, 189, 248, 0.1);
-        }
+        .btn-action:hover { background: rgba(56, 189, 248, 0.1); }
 
         footer {
             text-align: center;
@@ -118,53 +137,34 @@
 </head>
 <body>
 
+<nav>
+    <a href="index.html" style="color: var(--accent);">Головна</a>
+    <a href="about.html" style="color: var(--text-muted);">Про проєкт</a>
+</nav>
+
 <header>
     <div class="logo">CONTROVERSIA</div>
     <div class="tagline">Відкриті питання науки та суспільства</div>
 </header>
 
 <div class="container">
-    <div class="topic-header">
-        <span style="color: var(--accent)">Тема тижня:</span>
-        <h2>Чи може ШІ мати свідомість?</h2>
-        <p>Аналіз природи невизначеності: відсутність єдиного визначення "свідомості" у нейронауці та філософії.</p>
+    <div class="topic-header" id="current-topic-box">
+        <span style="color: var(--accent)">Поточна тема:</span>
+        <h2 id="topic-title">Завантаження...</h2>
+        <p id="topic-description">Ми шукаємо актуальну дискусію в базі даних...</p>
     </div>
 
-    <div class="debate-grid">
-        <div class="argument-card pro">
-            <span class="badge badge-pro">Теорія функционалізму</span>
-            <h3>Функціональна схожість</h3>
-            <p>Якщо система обробляє інформацію так само як людський мозок, вона повинна мати суб'єктивний досвід.</p>
-            <small style="color: var(--text-muted)">Репутація автора: +142</small>
+    <div class="debate-grid" id="arguments-grid">
         </div>
-
-        <div class="argument-card contra">
-            <span class="badge badge-contra">Біологічний натуралізм</span>
-            <h3>Відсутність біологічного субстрату</h3>
-            <p>Свідомість — це біологічний процес, подібний до травлення, який неможливо зімітувати кодом.</p>
-            <small style="color: var(--text-muted)">Репутація автора: +89</small>
-        </div>
-    </div>
 
     <button class="btn-action" onclick="addIdea()">+ Запропонувати власну гіпотезу або критику</button>
 </div>
 
 <footer>
-    <p>&copy; 2026 Controversia.</p>
+    <p>&copy; 2026 Controversia. Проєкт зимової школи DES 2026</p>
 </footer>
 
-<script>
-    function addIdea() {
-        const idea = prompt("Введіть вашу гіпотезу або аргумент:");
-        if (idea) {
-            alert("Дякуємо! Ваша ідея відправлена на AI-перевірку логічності. Після підключення Supabase вона з'явиться в базі.");
-        }
-    }
-</script>
+<script src="script.js"></script>
 
 </body>
-<nav style="padding: 1rem 2rem; background: rgba(30, 41, 59, 0.8); display: flex; justify-content: center; gap: 20px; position: sticky; top: 0;">
-    <a href="index.html" style="color: var(--accent); text-decoration: none; font-weight: bold;">Головна</a>
-    <a href="about.html" style="color: var(--text-muted); text-decoration: none; font-weight: bold;">Про проєкт</a>
-</nav>
 </html>
