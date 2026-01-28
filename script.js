@@ -3,6 +3,10 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Глобальні змінні для модалки
+let currentTopicId = null;
+let selectedType = 'pro';
+
 // 1. Завантаження тем
 async function loadContent() {
     const container = document.getElementById('main-container');
@@ -89,41 +93,51 @@ async function voteArgument(argId, topicId) {
     }
 }
 
-// 4. Додавання ідеї (з типом pro/contra)
-async function addIdea(topicId) {
-    const authorName = prompt("Введіть ваше ім'я:", "Гість");
-    if (authorName === null) return;
+// 4. Логіка модального вікна
+function addIdea(topicId) {
+    currentTopicId = topicId;
+    document.getElementById('modal').style.display = 'flex';
+}
 
-    const title = prompt("Заголовок вашої думки:", "Гіпотеза");
-    if (title === null) return;
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+}
 
-    const badgeText = prompt("Ваш статус (наприклад: Студент, Дослідник):", "Учасник");
-    if (badgeText === null) return;
+function setType(type) {
+    selectedType = type;
+    document.getElementById('btn-pro').classList.toggle('active', type === 'pro');
+    document.getElementById('btn-contra').classList.toggle('active', type === 'contra');
+}
 
-    const text = prompt("Опишіть вашу ідею:");
-    if (!text) return;
+async function submitIdea() {
+    const author = document.getElementById('modal-author').value || "Гість";
+    const title = document.getElementById('modal-title').value || "Гіпотеза";
+    const badge = document.getElementById('modal-badge').value || "Учасник";
+    const text = document.getElementById('modal-content').value;
 
-    const typeInput = prompt("Тип аргументу (введіть 'pro' для підтримки або 'contra' для заперечення):", "pro");
-    const safeType = (typeInput === 'contra' || typeInput === 'con') ? 'contra' : 'pro';
+    if (!text) {
+        alert("Будь ласка, введіть текст аргументу!");
+        return;
+    }
 
     const { data, error } = await supabaseClient
         .from('arguments')
-        .insert([
-            { 
-                topic_id: topicId, 
-                content: text, 
-                arg_type: safeType,
-                title: title, 
-                badge_text: badgeText,
-                author_name: authorName
-            }
-        ]);
+        .insert([{ 
+            topic_id: currentTopicId, 
+            content: text, 
+            arg_type: selectedType,
+            title: title, 
+            badge_text: badge,
+            author_name: author
+        }]);
 
     if (error) {
-        alert("Не вдалося зберегти: " + error.message);
+        alert("Помилка збереження: " + error.message);
     } else {
-        alert("Успішно додано!");
-        loadArguments(topicId); 
+        closeModal();
+        loadArguments(currentTopicId);
+        // Очистити поле тексту після відправки
+        document.getElementById('modal-content').value = '';
     }
 }
 
