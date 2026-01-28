@@ -1,15 +1,19 @@
 const SUPABASE_URL = 'https://noawhiwgihrcqygsmjed.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vYXdoaXdnaWhyY3F5Z3NtamVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxOTkzMzUsImV4cCI6MjA4NDc3NTMzNX0.MPeLwmSh5Vx12J470W_tbojh5JoUJIhSa0V-Q_a20ow';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Створюємо клієнт (перевіряємо чи бібліотека завантажена)
+const supabaseClient = typeof supabase !== 'undefined' 
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
+    : null;
 
-// Глобальні змінні для модалки
 let currentTopicId = null;
 let selectedType = 'pro';
 
 // 1. Завантаження тем
 async function loadContent() {
     const container = document.getElementById('main-container');
+    if (!container) return;
+    
     container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Завантаження дискусій...</p>';
 
     const { data: topics, error: tError } = await supabaseClient
@@ -63,7 +67,7 @@ async function loadArguments(topicId) {
         args.forEach(arg => {
             const typeClass = arg.arg_type === 'con' || arg.arg_type === 'contra' ? 'contra' : 'pro';
             
-            const card = `
+            grid.innerHTML += `
                 <div class="argument-card ${typeClass}">
                     <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 15px;">
                         <span class="badge badge-${typeClass}">${arg.badge_text || 'Думка'}</span>
@@ -76,40 +80,27 @@ async function loadArguments(topicId) {
                     <small style="color: var(--text-muted); font-style: italic;">— ${arg.author_name}</small>
                 </div>
             `;
-            grid.innerHTML += card;
         });
     }
 }
 
-// 3. Голосування
-async function voteArgument(argId, topicId) {
-    const { data, error } = await supabaseClient
-        .rpc('vote_for_argument', { arg_id: argId });
-
-    if (error) {
-        alert("Помилка: " + error.message);
-    } else {
-        loadArguments(topicId);
-    }
-}
-
-// 4. Логіка модального вікна
-function addIdea(topicId) {
+// 3. Функції модалки (прив'язуємо до window для надійності)
+window.addIdea = function(topicId) {
     currentTopicId = topicId;
     document.getElementById('modal').style.display = 'flex';
 }
 
-function closeModal() {
+window.closeModal = function() {
     document.getElementById('modal').style.display = 'none';
 }
 
-function setType(type) {
+window.setType = function(type) {
     selectedType = type;
     document.getElementById('btn-pro').classList.toggle('active', type === 'pro');
     document.getElementById('btn-contra').classList.toggle('active', type === 'contra');
 }
 
-async function submitIdea() {
+window.submitIdea = async function() {
     const author = document.getElementById('modal-author').value || "Гість";
     const title = document.getElementById('modal-title').value || "Гіпотеза";
     const badge = document.getElementById('modal-badge').value || "Учасник";
@@ -120,7 +111,7 @@ async function submitIdea() {
         return;
     }
 
-    const { data, error } = await supabaseClient
+    const { error } = await supabaseClient
         .from('arguments')
         .insert([{ 
             topic_id: currentTopicId, 
@@ -134,11 +125,23 @@ async function submitIdea() {
     if (error) {
         alert("Помилка збереження: " + error.message);
     } else {
-        closeModal();
+        window.closeModal();
         loadArguments(currentTopicId);
-        // Очистити поле тексту після відправки
         document.getElementById('modal-content').value = '';
     }
 }
 
-loadContent();
+window.voteArgument = async function(argId, topicId) {
+    const { error } = await supabaseClient.rpc('vote_for_argument', { arg_id: argId });
+    if (error) alert("Помилка: " + error.message);
+    else loadArguments(topicId);
+}
+
+// ЗАПУСК ПІСЛЯ ЗАВАНТАЖЕННЯ СТОРІНКИ
+document.addEventListener('DOMContentLoaded', () => {
+    if (supabaseClient) {
+        loadContent();
+    } else {
+        console.error("Бібліотека Supabase не завантажена!");
+    }
+});
