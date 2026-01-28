@@ -62,12 +62,12 @@ async function loadArguments(topicId) {
             const card = `
                 <div class="argument-card ${typeClass}">
                     <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 15px;">
-                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Думка'}</span>
+                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Користувач'}</span>
                         <span style="cursor:pointer; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 20px;" onclick="voteArgument(${arg.id}, ${topicId})">
                             👍 <b>${arg.reputation}</b>
                         </span>
                     </div>
-                    <h3 style="margin: 0 0 10px 0; color: var(--accent);">${arg.title || 'Нова ідея'}</h3>
+                    <h3 style="margin: 0 0 10px 0; color: var(--accent);">${arg.title || 'Думка'}</h3>
                     <p style="font-size: 0.95rem; margin-bottom: 15px;">${arg.content}</p>
                     <small style="color: var(--text-muted); font-style: italic;">— ${arg.author_name}</small>
                 </div>
@@ -89,22 +89,18 @@ async function voteArgument(argId, topicId) {
     }
 }
 
-// 4. Додавання ідеї (з типом pro/contra)
+// 4. Додавання ідеї (З автоматичним статусом та заголовком)
 async function addIdea(topicId) {
     const authorName = prompt("Введіть ваше ім'я:", "Гість");
-    if (authorName === null) return;
-
-    const title = prompt("Заголовок вашої думки:", "Гіпотеза");
-    if (title === null) return;
-
-    const badgeText = prompt("Ваш статус (наприклад: Студент, Дослідник):", "Учасник");
-    if (badgeText === null) return;
+    if (!authorName) return;
 
     const text = prompt("Опишіть вашу ідею:");
     if (!text) return;
 
-    const typeInput = prompt("Тип аргументу (введіть 'pro' для підтримки або 'contra' для заперечення):", "pro");
-    const safeType = (typeInput === 'contra' || typeInput === 'con') ? 'contra' : 'pro';
+    const typeInput = prompt("Тип аргументу (pro - за, contra - проти):", "pro");
+    if (typeInput === null) return;
+    
+    const safeType = (typeInput.toLowerCase() === 'contra' || typeInput.toLowerCase() === 'con') ? 'contra' : 'pro';
 
     const { data, error } = await supabaseClient
         .from('arguments')
@@ -113,8 +109,8 @@ async function addIdea(topicId) {
                 topic_id: topicId, 
                 content: text, 
                 arg_type: safeType,
-                title: title, 
-                badge_text: badgeText,
+                title: "Думка",           // Автоматичний заголовок
+                badge_text: "Користувач", // Автоматичний статус
                 author_name: authorName
             }
         ]);
