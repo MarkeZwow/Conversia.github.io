@@ -3,38 +3,43 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 1. Завантаження тем (Topic)
+// 1. Завантаження тем
 async function loadContent() {
     const container = document.getElementById('main-container');
-    container.innerHTML = '<p style="text-align:center;">Завантаження дискусій...</p>';
+    container.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Завантаження дискусій...</p>';
 
-    const { data: topics, error } = await supabaseClient
+    const { data: topics, error: tError } = await supabaseClient
         .from('topics')
         .select('*')
         .eq('status', 'active')
         .order('id', { ascending: true });
 
-    if (error) {
-        container.innerHTML = '<p style="color:red;">Помилка підключення до бази.</p>';
+    if (tError) {
+        console.error('Помилка тем:', tError);
+        container.innerHTML = '<p style="text-align:center; color: var(--contra);">Помилка завантаження.</p>';
         return;
     }
 
     container.innerHTML = ''; 
 
     for (const topic of topics) {
-        const div = document.createElement('div');
-        div.innerHTML = `
+        const topicBlock = document.createElement('div');
+        topicBlock.className = 'topic-block';
+        topicBlock.style.marginBottom = '4rem'; 
+
+        topicBlock.innerHTML = `
             <div class="topic-header">
-                <small style="color: var(--accent);">ТЕМА #${topic.id}</small>
-                <h2>${topic.title}</h2>
+                <span style="color: var(--accent); font-weight: bold;">Тема #${topic.id} | ${topic.category || 'Загальне'}</span>
+                <h2 style="margin: 10px 0;">${topic.title}</h2>
                 <p style="color: var(--text-muted);">${topic.description}</p>
             </div>
             <div class="debate-grid" id="grid-${topic.id}"></div>
             <button class="btn-action" onclick="addIdea(${topic.id})">
-                + Додати свою думку
+                + Додати свій внесок у дискусію
             </button>
         `;
-        container.appendChild(div);
+        
+        container.appendChild(topicBlock);
         await loadArguments(topic.id);
     }
 }
@@ -48,52 +53,34 @@ async function loadArguments(topicId) {
         .order('reputation', { ascending: false });
 
     const grid = document.getElementById(`grid-${topicId}`);
-    if (!grid) return;
-
-    grid.innerHTML = '';
-    if (args) {
+    
+    if (args && grid) {
+        grid.innerHTML = '';
         args.forEach(arg => {
-            const isContra = (arg.arg_type === 'contra' || arg.arg_type === 'con');
-            const typeClass = isContra ? 'contra' : 'pro';
-            const badgeLabel = isContra ? 'Заперечення' : 'Підтримка';
-
-            grid.innerHTML += `
+            const typeClass = arg.arg_type === 'con' || arg.arg_type === 'contra' ? 'contra' : 'pro';
+            
+            const card = `
                 <div class="argument-card ${typeClass}">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Користувач'}</span>
-                        <span style="cursor:pointer;" onclick="voteArgument(${arg.id}, ${topicId})">
+                    <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 15px;">
+                        <span class="badge badge-${typeClass}">${arg.badge_text || 'Думка'}</span>
+                        <span style="cursor:pointer; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 20px;" onclick="voteArgument(${arg.id}, ${topicId})">
                             👍 <b>${arg.reputation}</b>
                         </span>
                     </div>
-                    <h4 style="margin:5px 0; color:var(--accent);">${arg.title || 'Думка'}</h4>
-                    <p style="font-size:0.9rem;">${arg.content}</p>
-                    <small style="color:var(--text-muted);">— ${arg.author_name || 'Гість'}</small>
+                    <h3 style="margin: 0 0 10px 0; color: var(--accent);">${arg.title || 'Нова ідея'}</h3>
+                    <p style="font-size: 0.95rem; margin-bottom: 15px;">${arg.content}</p>
+                    <small style="color: var(--text-muted); font-style: italic;">— ${arg.author_name}</small>
                 </div>
             `;
+            grid.innerHTML += card;
         });
     }
 }
 
-// 3. Додавання ідеї (АВТОМАТИЧНІ ПОЛЯ)
-async function addIdea(topicId) {
-    // Користувач вводить лише суть
-    const text = prompt("Ваша ідея або аргумент:");
-    if (!text) return;
-
-    const typeInput = prompt("Тип: 'pro' (підтримую) або 'contra' (заперечую):", "pro");
-    const safeType = (typeInput === 'contra' || typeInput === 'con') ? 'contra' : 'pro';
-
-    // Всі інші дані заповнюються автоматично
-    const { error } = await supabaseClient
-        .from('arguments')
-        .insert([{ 
-            topic_id: topicId, 
-            content: text, 
-            arg_type: safeType,
-            title: "Думка",            // Автозаповнення
-            badge_text: "Користувач",   // Автозаповнення
-            author_name: "Гість"        // Автозаповнення
-        }]);
+// 3. Голосування
+async function voteArgument(argId, topicId) {
+    const { data, error } = await supabaseClient
+        .rpc('vote_for_argument', { arg_id: argId });
 
     if (error) {
         alert("Помилка: " + error.message);
@@ -102,13 +89,42 @@ async function addIdea(topicId) {
     }
 }
 
-// 4. Голосування
-async function voteArgument(argId, topicId) {
-    const { error } = await supabaseClient.rpc('vote_for_argument', { arg_id: argId });
+// 4. Додавання ідеї (з типом pro/contra)
+async function addIdea(topicId) {
+    const authorName = prompt("Введіть ваше ім'я:", "Гість");
+    if (authorName === null) return;
+
+    const title = prompt("Заголовок вашої думки:", "Гіпотеза");
+    if (title === null) return;
+
+    const badgeText = prompt("Ваш статус (наприклад: Студент, Дослідник):", "Учасник");
+    if (badgeText === null) return;
+
+    const text = prompt("Опишіть вашу ідею:");
+    if (!text) return;
+
+    const typeInput = prompt("Тип аргументу (введіть 'pro' для підтримки або 'contra' для заперечення):", "pro");
+    const safeType = (typeInput === 'contra' || typeInput === 'con') ? 'contra' : 'pro';
+
+    const { data, error } = await supabaseClient
+        .from('arguments')
+        .insert([
+            { 
+                topic_id: topicId, 
+                content: text, 
+                arg_type: safeType,
+                title: title, 
+                badge_text: badgeText,
+                author_name: authorName
+            }
+        ]);
+
     if (error) {
-        console.error(error);
+        alert("Не вдалося зберегти: " + error.message);
     } else {
-        loadArguments(topicId);
+        alert("Успішно додано!");
+        loadArguments(topicId); 
     }
 }
+
 loadContent();
