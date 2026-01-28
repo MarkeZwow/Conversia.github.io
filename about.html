@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Про проєкт | Controversia</title>
     <style>
-        /* Використовуємо ті ж змінні, що і в index.html */
         :root {
             --bg: #0f172a;
             --card-bg: #1e293b;
             --accent: #38bdf8;
             --text: #f1f5f9;
             --text-muted: #94a3b8;
+            --ai-glow: rgba(56, 189, 248, 0.15);
         }
 
         body {
@@ -24,12 +24,15 @@
 
         .nav {
             padding: 1rem 2rem;
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.9);
             display: flex;
             justify-content: center;
             gap: 20px;
             position: sticky;
             top: 0;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
         }
 
         .nav a {
@@ -44,40 +47,68 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 850px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
-        h1 { color: var(--accent); font-size: 2.5rem; }
-        h2 { color: var(--accent); margin-top: 2rem; }
+        h1 { color: var(--accent); font-size: 2.8rem; margin-bottom: 0.5rem; }
+        h2 { color: var(--accent); margin-top: 2.5rem; display: flex; align-items: center; }
+        
+        /* Декоративна лінія біля заголовків */
+        h2::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--accent), transparent);
+            margin-left: 20px;
+            opacity: 0.3;
+        }
 
         .mission-box {
             background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            border-top: 4px solid var(--accent);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border-left: 4px solid var(--accent);
             margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .feature-list {
-            list-style: none;
-            padding: 0;
+        .feature-item {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .feature-list li {
-            margin-bottom: 15px;
-            padding-left: 30px;
+        .ai-section {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #1e1b4b 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--accent);
             position: relative;
+            overflow: hidden;
         }
 
-        .feature-list li::before {
-            content: "▹";
-            position: absolute;
-            left: 0;
-            color: var(--accent);
-            font-weight: bold;
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
         }
+
+        .ai-tag {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .tagline { color: var(--text-muted); font-size: 1.3rem; font-weight: 300; }
+        strong { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -88,26 +119,41 @@
 </nav>
 
 <div class="container">
-    <h1>Про проєкт Controversia</h1>
+    <header style="text-align: center; margin-bottom: 3rem;">
+        <h1>Controversia</h1>
+        <p class="tagline">Мета-платформа для інтелектуального синтезу</p>
+    </header>
     
-    <p class="tagline">Ми перетворюємо хаос суперечок на конструктор ідей.</p>
-
     <div class="mission-box">
         <h2>Наша місія</h2>
-        <p>У світі, де інформації стає все більше, а порозуміння — менше, <strong>Controversia</strong> стає платформою для тих, хто не боїться складних питань. Ми фокусуємося на "відкритих проблемах" — тих зонах науки та суспільства, де ще немає остаточної відповіді.</p>
+        <p>У світі інформаційного шуму <strong>Controversia</strong> стає фільтром для чистих ідей. Ми фокусуємося на "відкритих питаннях" — фундаментальних проблемах науки та суспільства, де істина ще не зафіксована. Наша мета — перетворити деструктивні суперечки на структурований конструктор, де кожна думка має своє логічне місце.</p>
     </div>
 
     <h2>Як це працює?</h2>
-    <ul class="feature-list">
-        <li><strong>Структурованість:</strong> Кожна тема розкладена на чіткі аргументи "за" та "проти". Ніякої "води" — тільки логіка.</li>
-        <li><strong>Система репутації:</strong> Ми цінуємо якість, а не кількість. Автори найкращих аргументів отримують визнання спільноти.</li>
-        <li><strong>AI-модерація:</strong> Наші алгоритми перевіряють дискусії на логічність, допомагаючи уникати маніпуляцій та емоційних пасток.</li>
-    </ul>
+    
+    <div class="feature-item">
+        <strong>Анатомія дискусії:</strong> Ми відмовляємося від формату лінійних коментарів. Кожна тема розкладається на атомні складові: природу невизначеності (чому ми не маємо відповіді), чинні наукові теорії та ключові доводи сторін. Це дозволяє бачити "карту" проблеми цілісно.
+    </div>
 
-    <h2>Майбутнє проєкту</h2>
-    <p>Зараз ми працюємо над запуском інтерактивної бази знань. Наступним кроком стане впровадження системи репутації через <strong>Supabase</strong>, що дозволить кожному користувачу стати співавтором наукового чи соціального прориву.</p>
+    <div class="feature-item">
+        <strong>Система інтелектуальної репутації:</strong> Замість порожніх лайків ми впроваджуємо вагу аргументу. Репутація автора зростає не від кількості слів, а від якості доказів та здатності знаходити логічні помилки в існуючих гіпотезах.
+    </div>
 
-    <a href="index.html" style="display: inline-block; margin-top: 2rem; color: var(--accent); text-decoration: none;">← Повернутися до дискусій</a>
+    <h2>Майбутнє та AI-інтеграція</h2>
+    <p>Ми будуємо не просто базу даних, а інтелектуальне середовище. Невдовзі проект отримає потужний <strong>AI-стек</strong> для підтримки чистоти дискусій:</p>
+
+    <div class="ai-section">
+        <div class="ai-grid">
+            <div class="ai-tag"><strong>Logical Validator:</strong> Автоматична перевірка аргументів на логічні помилки (ad hominem, софізми тощо).</div>
+            <div class="ai-tag"><strong>Bias Detector:</strong> Виявлення прихованих когнітивних упереджень у текстах гіпотез.</div>
+            <div class="ai-tag"><strong>Synthesis Engine:</strong> ШІ-інструмент для пошуку точок дотику між протилежними теоріями.</div>
+            <div class="ai-tag"><strong>Source Verifier:</strong> Автоматичний пошук першоджерел та перевірка наукової бази доводів.</div>
+        </div>
+    </div>
+
+    <p style="margin-top: 2rem;">Наступним етапом стане повна синхронізація з <strong>Supabase</strong>, що зробить базу знань доступною для глобального редагування та спільного пошуку виходів із концептуальних глухих кутів.</p>
+
+    <a href="index.html" style="display: inline-block; margin-top: 2rem; color: var(--accent); text-decoration: none; font-weight: bold;">← Повернутися до конструктора ідей</a>
 </div>
 
 <footer>
